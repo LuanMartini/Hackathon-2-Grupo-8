@@ -3,7 +3,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { formatDuration } from "@/lib/diagnostic";
 
 const priorityStyle = { Alta: "border-red-200 bg-red-50 text-red-700", Média: "border-amber-200 bg-amber-50 text-amber-700", Baixa: "border-slate-200 bg-slate-50 text-slate-600" };
-const statusStyle = { Aberto: "bg-blue-50 text-blue-700", "Em análise": "bg-violet-50 text-violet-700", Resolvido: "bg-emerald-50 text-emerald-700" };
+const statusStyle = { Aberto: "bg-blue-50 text-blue-700", "Em análise": "bg-violet-50 text-violet-700", "Aguardando informação": "bg-amber-50 text-amber-700", Resolvido: "bg-emerald-50 text-emerald-700" };
 
 export function TicketTable({ tickets, onSelect, limit }) {
   const visible = limit ? tickets.slice(0, limit) : tickets;

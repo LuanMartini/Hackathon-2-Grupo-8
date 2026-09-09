@@ -30,6 +30,38 @@
 html { scroll-behavior: smooth; }
 body { margin: 0; background: var(--background); color: var(--foreground); font-family: "Inter", "Segoe UI", Arial, sans-serif; }
 button, a, textarea, input { outline-offset: 3px; }
+button:focus-visible, a:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid var(--ring) !important; outline-offset: 3px; }
 ::selection { background: #c7d7ff; color: #0f245c; }
 @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 .animate-rise { animation: rise .3s ease-out both; }
+
+html.font-size-small { font-size: 14px; }
+html.font-size-large { font-size: 18px; }
+
+html[data-theme="dark"] {
+  --background: #0b1220; --foreground: #e8edf7; --card: #121c2e; --card-foreground: #e8edf7;
+  --popover: #121c2e; --popover-foreground: #e8edf7; --secondary: #1c2a42; --secondary-foreground: #d8e5ff;
+  --muted: #1c293c; --muted-foreground: #a8b5c7; --accent: #1e3260; --accent-foreground: #e5edff;
+  --border: #334155; --input: #475569; --ring: #9bb7ff;
+}
+html[data-theme="dark"] body { background: #0b1220; color: #e8edf7; }
+html[data-theme="dark"] .bg-white, html[data-theme="dark"] .bg-white\/80, html[data-theme="dark"] .bg-white\/90, html[data-theme="dark"] .bg-white\/85, html[data-theme="dark"] .bg-slate-50, html[data-theme="dark"] .bg-slate-50\/70 { background-color: #121c2e !important; }
+html[data-theme="dark"] .bg-slate-100, html[data-theme="dark"] .bg-slate-200 { background-color: #1c293c !important; }
+html[data-theme="dark"] .text-slate-950, html[data-theme="dark"] .text-slate-900, html[data-theme="dark"] .text-slate-800, html[data-theme="dark"] .text-slate-700 { color: #f1f5f9 !important; }
+html[data-theme="dark"] .text-slate-600, html[data-theme="dark"] .text-slate-500, html[data-theme="dark"] .text-slate-400 { color: #b7c3d4 !important; }
+html[data-theme="dark"] .border-slate-200, html[data-theme="dark"] .border-slate-300 { border-color: #42536d !important; }
+html[data-theme="dark"] .bg-blue-50, html[data-theme="dark"] .bg-blue-50\/70 { background-color: #152a55 !important; }
+html[data-theme="dark"] .bg-emerald-50 { background-color: #123d35 !important; }
+html[data-theme="dark"] .bg-amber-50 { background-color: #4c3510 !important; }
+html[data-theme="dark"] .bg-red-50 { background-color: #4a1d26 !important; }
+html[data-theme="dark"] .text-blue-900, html[data-theme="dark"] .text-blue-800 { color: #d4e2ff !important; }
+html[data-theme="dark"] .bg-slate-950 { background-color: #070d18 !important; }
+
+html.high-contrast { --ring: #ffbf00; --border: #000000; }
+html.high-contrast body { color: #000000; background: #ffffff; }
+html.high-contrast .text-slate-950, html.high-contrast .text-slate-900, html.high-contrast .text-slate-800, html.high-contrast .text-slate-700, html.high-contrast .text-slate-600, html.high-contrast .text-slate-500 { color: #000000 !important; }
+html.high-contrast .border-slate-200, html.high-contrast .border-slate-300, html.high-contrast .border-blue-200 { border-color: #000000 !important; border-width: 2px !important; }
+html.high-contrast .bg-blue-50, html.high-contrast .bg-emerald-50, html.high-contrast .bg-amber-50, html.high-contrast .bg-red-50 { background-color: #ffffff !important; }
+html.high-contrast[data-theme="dark"] body { background: #000000; color: #ffffff; }
+html.high-contrast[data-theme="dark"] .text-slate-950, html.high-contrast[data-theme="dark"] .text-slate-900, html.high-contrast[data-theme="dark"] .text-slate-800, html.high-contrast[data-theme="dark"] .text-slate-700, html.high-contrast[data-theme="dark"] .text-slate-600, html.high-contrast[data-theme="dark"] .text-slate-500 { color: #ffffff !important; }
+html.high-contrast[data-theme="dark"] .bg-white, html.high-contrast[data-theme="dark"] .bg-slate-50, html.high-contrast[data-theme="dark"] .bg-slate-100, html.high-contrast[data-theme="dark"] .bg-blue-50, html.high-contrast[data-theme="dark"] .bg-emerald-50, html.high-contrast[data-theme="dark"] .bg-amber-50, html.high-contrast[data-theme="dark"] .bg-red-50 { background-color: #000000 !important; }

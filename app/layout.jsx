@@ -1,4 +1,5 @@
 import "./globals.css";
+import { AccessibilityProvider } from "@/components/AccessibilityProvider";
 
 export const metadata = {
   title: "Suporte Claro — diagnóstico guiado",
@@ -9,7 +10,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="pt-BR">
-      <body>{children}</body>
+      <body><AccessibilityProvider>{children}</AccessibilityProvider></body>
     </html>
   );
 }

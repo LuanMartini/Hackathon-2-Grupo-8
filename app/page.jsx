@@ -9,6 +9,7 @@ import { Brand } from "@/components/Brand";
 import { useSupportWebMcp } from "@/hooks/use-support-webmcp";
 import { ProfileSwitcher } from "@/components/ProfileSwitcher";
 import { useDemoProfile } from "@/lib/demo-access";
+import { AccessibilityMenu } from "@/components/AccessibilityMenu";
 
 const evidence = [
   ["42", "pessoas ouvidas"],
@@ -49,6 +50,7 @@ export default function Home() {
           <Brand />
           <nav aria-label="Navegação principal" className="flex items-center gap-2">
             {profile?.role === "suporte" ? <Button variant="ghost" className="hidden text-slate-600 sm:inline-flex" onClick={() => router.push("/suporte")}><LayoutDashboard aria-hidden="true" className="size-4" />Painel do suporte</Button> : <Button variant="ghost" className="hidden text-slate-600 sm:inline-flex" onClick={() => router.push("/meus-chamados")}><Ticket aria-hidden="true" className="size-4" />Meus chamados</Button>}
+            <AccessibilityMenu />
             <ProfileSwitcher compact />
             <span className="hidden rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-500 md:inline-flex">
               MVP · dados demonstrativos

@@ -21,7 +21,7 @@ const samplePriorities = [
 export default function SupportDashboard() {
   const [tickets, setTickets] = useState([]);
   const [selected, setSelected] = useState(null);
-  useEffect(() => setTickets(loadSupportTickets()), []);
+  useEffect(() => { const refresh = () => setTickets(loadSupportTickets()); refresh(); window.addEventListener("support-tickets-updated", refresh); return () => window.removeEventListener("support-tickets-updated", refresh); }, []);
 
   const openTickets = useMemo(() => tickets.filter((ticket) => ticket.status !== "Resolvido"), [tickets]);
   const priorityTickets = useMemo(() => openTickets.filter((ticket) => ticket.priority === "Alta").slice(0, 3), [openTickets]);
@@ -29,6 +29,12 @@ export default function SupportDashboard() {
   const attentionCount = priorityTickets.length || 3;
   const resolutionRate = Math.round(((tickets.filter((ticket) => ticket.status === "Resolvido").length + 36) / (tickets.length + 44 || 1)) * 100);
   const visiblePriorities = priorityTickets.length ? priorityTickets : samplePriorities;
+  const awaitingCount = tickets.filter((ticket) => ticket.status === "Aguardando informação").length;
+  const positiveFeedback = tickets.filter((ticket) => ticket.evaluation?.resolved === true).length;
+  const negativeFeedback = tickets.filter((ticket) => ticket.evaluation?.resolved === false).length;
+  const qualityTickets = tickets.filter((ticket) => ticket.quality?.score);
+  const averageQuality = qualityTickets.length ? Math.round(qualityTickets.reduce((sum, ticket) => sum + ticket.quality.score, 0) / qualityTickets.length) : 78;
+  const similarCount = tickets.reduce((sum, ticket) => sum + (ticket.similarTickets?.length || 0), 0);
 
   return <main className="p-4 sm:p-7 lg:p-9">
     <div className="mx-auto max-w-7xl">
@@ -43,6 +49,8 @@ export default function SupportDashboard() {
         <StatsCard icon={Clock3} label="Tempo médio de triagem" value="4m 32s" note="-38s nesta semana" />
         <StatsCard icon={CheckCircle2} label="Resolvidos no prazo" value={`${resolutionRate}%`} note="Meta: 85%" />
       </section>
+
+      <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4"><article className="rounded-2xl border border-amber-200 bg-amber-50 p-5"><p className="text-sm font-bold text-amber-900">Aguardando usuário</p><p className="mt-3 text-3xl font-bold text-amber-950">{awaitingCount}</p><p className="mt-1 text-sm text-amber-800">Casos que precisam de uma resposta.</p></article><article className="rounded-2xl border border-slate-200 bg-white p-5"><p className="text-sm font-bold text-slate-700">Qualidade média</p><p className="mt-3 text-3xl font-bold text-slate-950">{averageQuality}%</p><p className="mt-1 text-sm text-slate-500">Relatos estruturados para triagem.</p></article><article className="rounded-2xl border border-slate-200 bg-white p-5"><p className="text-sm font-bold text-slate-700">Avaliações</p><p className="mt-3 text-2xl font-bold text-slate-950">{positiveFeedback} positivas <span className="text-slate-300">/</span> {negativeFeedback} negativas</p><p className="mt-1 text-sm text-slate-500">Respostas após chamados resolvidos.</p></article><article className="rounded-2xl border border-slate-200 bg-white p-5"><p className="text-sm font-bold text-slate-700">Casos parecidos</p><p className="mt-3 text-3xl font-bold text-slate-950">{similarCount}</p><p className="mt-1 text-sm text-slate-500">Sinalizações antes da abertura.</p></article></section>
 
       <section className="mt-7 grid gap-6 xl:grid-cols-[1.2fr_.8fr]">
         <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
