@@ -36,6 +36,7 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, input:focus-visib
 .animate-rise { animation: rise .3s ease-out both; }
 
 html.font-size-small { font-size: 14px; }
+html.font-size-standard { font-size: 16px; }
 html.font-size-large { font-size: 18px; }
 
 html[data-theme="dark"] {
@@ -62,6 +63,26 @@ html.high-contrast body { color: #000000; background: #ffffff; }
 html.high-contrast .text-slate-950, html.high-contrast .text-slate-900, html.high-contrast .text-slate-800, html.high-contrast .text-slate-700, html.high-contrast .text-slate-600, html.high-contrast .text-slate-500 { color: #000000 !important; }
 html.high-contrast .border-slate-200, html.high-contrast .border-slate-300, html.high-contrast .border-blue-200 { border-color: #000000 !important; border-width: 2px !important; }
 html.high-contrast .bg-blue-50, html.high-contrast .bg-emerald-50, html.high-contrast .bg-amber-50, html.high-contrast .bg-red-50 { background-color: #ffffff !important; }
+html.high-contrast a { color: #0026a8 !important; text-decoration: underline; text-decoration-thickness: 2px; }
+html.high-contrast input, html.high-contrast textarea, html.high-contrast select { border: 2px solid currentColor !important; background: #ffffff !important; }
+html.high-contrast button:focus-visible, html.high-contrast a:focus-visible, html.high-contrast input:focus-visible, html.high-contrast textarea:focus-visible, html.high-contrast select:focus-visible { outline-color: #000000 !important; box-shadow: 0 0 0 5px #ffbf00 !important; }
 html.high-contrast[data-theme="dark"] body { background: #000000; color: #ffffff; }
 html.high-contrast[data-theme="dark"] .text-slate-950, html.high-contrast[data-theme="dark"] .text-slate-900, html.high-contrast[data-theme="dark"] .text-slate-800, html.high-contrast[data-theme="dark"] .text-slate-700, html.high-contrast[data-theme="dark"] .text-slate-600, html.high-contrast[data-theme="dark"] .text-slate-500 { color: #ffffff !important; }
 html.high-contrast[data-theme="dark"] .bg-white, html.high-contrast[data-theme="dark"] .bg-slate-50, html.high-contrast[data-theme="dark"] .bg-slate-100, html.high-contrast[data-theme="dark"] .bg-blue-50, html.high-contrast[data-theme="dark"] .bg-emerald-50, html.high-contrast[data-theme="dark"] .bg-amber-50, html.high-contrast[data-theme="dark"] .bg-red-50 { background-color: #000000 !important; }
+html.high-contrast[data-theme="dark"] a { color: #8eb5ff !important; }
+html.high-contrast[data-theme="dark"] input, html.high-contrast[data-theme="dark"] textarea, html.high-contrast[data-theme="dark"] select { background: #000000 !important; }
+
+/* Preto e branco preserva textos e rótulos de status para que nenhuma informação dependa apenas de cor. */
+html.grayscale-mode { filter: grayscale(100%); }
+html.grayscale-mode body { background: #ffffff; color: #000000; }
+html.grayscale-mode .bg-white, html.grayscale-mode .bg-white\/80, html.grayscale-mode .bg-white\/85, html.grayscale-mode .bg-white\/90, html.grayscale-mode .bg-slate-50, html.grayscale-mode .bg-slate-100, html.grayscale-mode .bg-blue-50, html.grayscale-mode .bg-violet-50, html.grayscale-mode .bg-emerald-50, html.grayscale-mode .bg-amber-50, html.grayscale-mode .bg-red-50 { background-color: #ffffff !important; }
+html.grayscale-mode .bg-primary, html.grayscale-mode .bg-slate-950, html.grayscale-mode button[class*="bg-"] { background-color: #000000 !important; color: #ffffff !important; }
+html.grayscale-mode .text-slate-950, html.grayscale-mode .text-slate-900, html.grayscale-mode .text-slate-800, html.grayscale-mode .text-slate-700, html.grayscale-mode .text-slate-600, html.grayscale-mode .text-slate-500 { color: #000000 !important; }
+html.grayscale-mode .border-slate-200, html.grayscale-mode .border-slate-300, html.grayscale-mode .border-blue-200, html.grayscale-mode .border-emerald-200, html.grayscale-mode .border-amber-200, html.grayscale-mode .border-red-200 { border-color: #000000 !important; }
+html.grayscale-mode a { color: #000000 !important; text-decoration: underline; text-decoration-thickness: 2px; }
+html.grayscale-mode input, html.grayscale-mode textarea, html.grayscale-mode select { background: #ffffff !important; border: 2px solid #000000 !important; color: #000000 !important; }
+html.grayscale-mode[data-theme="dark"] body { background: #000000; color: #ffffff; }
+html.grayscale-mode[data-theme="dark"] .bg-white, html.grayscale-mode[data-theme="dark"] .bg-white\/80, html.grayscale-mode[data-theme="dark"] .bg-white\/85, html.grayscale-mode[data-theme="dark"] .bg-white\/90, html.grayscale-mode[data-theme="dark"] .bg-slate-50, html.grayscale-mode[data-theme="dark"] .bg-slate-100, html.grayscale-mode[data-theme="dark"] .bg-blue-50, html.grayscale-mode[data-theme="dark"] .bg-violet-50, html.grayscale-mode[data-theme="dark"] .bg-emerald-50, html.grayscale-mode[data-theme="dark"] .bg-amber-50, html.grayscale-mode[data-theme="dark"] .bg-red-50 { background-color: #000000 !important; }
+html.grayscale-mode[data-theme="dark"] .text-slate-950, html.grayscale-mode[data-theme="dark"] .text-slate-900, html.grayscale-mode[data-theme="dark"] .text-slate-800, html.grayscale-mode[data-theme="dark"] .text-slate-700, html.grayscale-mode[data-theme="dark"] .text-slate-600, html.grayscale-mode[data-theme="dark"] .text-slate-500 { color: #ffffff !important; }
+html.grayscale-mode[data-theme="dark"] a { color: #ffffff !important; }
+html.grayscale-mode[data-theme="dark"] input, html.grayscale-mode[data-theme="dark"] textarea, html.grayscale-mode[data-theme="dark"] select { background: #000000 !important; border-color: #ffffff !important; color: #ffffff !important; }

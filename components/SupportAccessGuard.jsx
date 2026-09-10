@@ -16,8 +16,8 @@ export function SupportAccessGuard({ children }) {
       <section className="w-full max-w-xl rounded-[28px] border border-slate-200 bg-white p-7 text-center shadow-[0_24px_70px_rgba(15,23,42,.12)] sm:p-10">
         <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-red-50 text-red-700"><ShieldAlert className="size-7" /></span>
         <p className="mt-6 text-sm font-bold text-red-700">ACESSO RESTRITO</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-950">A Central de Suporte é exclusiva da equipe.</h1>
-        <p className="mx-auto mt-4 max-w-md leading-7 text-slate-600">O perfil de usuário pode criar e acompanhar apenas os próprios chamados. Métricas, insights e chamados de outras pessoas ficam indisponíveis neste modo.</p>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-950">Esta área é exclusiva da equipe de suporte.</h1>
+        <p className="mx-auto mt-4 max-w-md leading-7 text-slate-600">Você não tem acesso a esta área neste perfil. Ainda é possível criar e acompanhar seus próprios chamados.</p>
         <div className="mt-7 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-left"><div className="flex gap-3"><LockKeyhole className="mt-0.5 size-5 shrink-0 text-amber-700" /><p className="text-sm leading-6 text-amber-900">Proteção demonstrativa: o perfil é local. Em produção, a autorização precisa ser validada por uma API e pelo servidor.</p></div></div>
         <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row"><Button onClick={() => router.push("/meus-chamados")}>Ver meus chamados</Button><ProfileSwitcher /></div>
       </section>

@@ -22,7 +22,7 @@ export default function DiagnosisPage() {
     if (!description) return;
     setState(null);
     setError("");
-    try { setState(createDiagnosticState(description)); } catch { setError("Não foi possível iniciar este diagnóstico."); }
+    try { setState(createDiagnosticState(description)); } catch { setError("Não conseguimos iniciar o diagnóstico agora. Volte ao início e tente novamente."); }
   }, [runId]);
 
   const tree = state ? diagnosticTrees[state.treeId] : null;

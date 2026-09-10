@@ -17,6 +17,14 @@ const samplePriorities = [
   { id: "#1041", title: "Conta bloqueada após tentativas", category: "Acesso", confidence: 92, priority: "Alta" },
   { id: "#1038", title: "Nota parada em processamento", category: "Serviço externo", confidence: 82, priority: "Alta" },
 ];
+const reportMetrics = [
+  { label: "Relatórios vazios", value: "6", note: "Principalmente em períodos recentes" },
+  { label: "Valores divergentes", value: "4", note: "Comparação com dados de origem" },
+  { label: "Falhas ao exportar", value: "5", note: "PDF, Excel ou CSV" },
+  { label: "Downloads bloqueados", value: "3", note: "Navegador ou extensão" },
+  { label: "Lentidão", value: "7", note: "Consultas com período amplo" },
+  { label: "Filtro mais citado", value: "Mensal", note: "Período e filial recorrentes" },
+];
 
 export default function SupportDashboard() {
   const [tickets, setTickets] = useState([]);
@@ -51,6 +59,7 @@ export default function SupportDashboard() {
       </section>
 
       <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4"><article className="rounded-2xl border border-amber-200 bg-amber-50 p-5"><p className="text-sm font-bold text-amber-900">Aguardando usuário</p><p className="mt-3 text-3xl font-bold text-amber-950">{awaitingCount}</p><p className="mt-1 text-sm text-amber-800">Casos que precisam de uma resposta.</p></article><article className="rounded-2xl border border-slate-200 bg-white p-5"><p className="text-sm font-bold text-slate-700">Qualidade média</p><p className="mt-3 text-3xl font-bold text-slate-950">{averageQuality}%</p><p className="mt-1 text-sm text-slate-500">Relatos estruturados para triagem.</p></article><article className="rounded-2xl border border-slate-200 bg-white p-5"><p className="text-sm font-bold text-slate-700">Avaliações</p><p className="mt-3 text-2xl font-bold text-slate-950">{positiveFeedback} positivas <span className="text-slate-300">/</span> {negativeFeedback} negativas</p><p className="mt-1 text-sm text-slate-500">Respostas após chamados resolvidos.</p></article><article className="rounded-2xl border border-slate-200 bg-white p-5"><p className="text-sm font-bold text-slate-700">Casos parecidos</p><p className="mt-3 text-3xl font-bold text-slate-950">{similarCount}</p><p className="mt-1 text-sm text-slate-500">Sinalizações antes da abertura.</p></article></section>
+      <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"><div className="mb-5"><h2 className="font-bold text-slate-950">Sinais de relatórios</h2><p className="mt-1 text-sm text-slate-500">Métricas demonstrativas para orientar a triagem de relatórios, exportações e downloads.</p></div><div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{reportMetrics.map((metric) => <article key={metric.label} className="rounded-2xl border border-slate-200 bg-slate-50 p-4"><p className="text-sm font-semibold text-slate-700">{metric.label}</p><p className="mt-2 text-2xl font-bold text-slate-950">{metric.value}</p><p className="mt-1 text-xs leading-5 text-slate-500">{metric.note}</p></article>)}</div></section>
 
       <section className="mt-7 grid gap-6 xl:grid-cols-[1.2fr_.8fr]">
         <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">

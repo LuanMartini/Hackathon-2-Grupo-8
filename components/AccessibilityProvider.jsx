@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 const AccessibilityContext = createContext(null);
 const STORAGE_KEY = "support-clear-accessibility-v1";
-const defaults = { theme: "system", fontSize: "standard", highContrast: false };
+const defaults = { theme: "system", fontSize: "standard", highContrast: false, grayscaleMode: false };
 
 function readPreferences() {
   try { return { ...defaults, ...JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}") }; } catch { return defaults; }
@@ -25,8 +25,10 @@ export function AccessibilityProvider({ children }) {
     const media = window.matchMedia("(prefers-color-scheme: dark)");
     media.addEventListener("change", applyTheme);
     root.classList.toggle("font-size-small", preferences.fontSize === "small");
+    root.classList.toggle("font-size-standard", preferences.fontSize === "standard");
     root.classList.toggle("font-size-large", preferences.fontSize === "large");
     root.classList.toggle("high-contrast", preferences.highContrast);
+    root.classList.toggle("grayscale-mode", preferences.grayscaleMode);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences));
     return () => media.removeEventListener("change", applyTheme);
   }, [preferences, ready]);

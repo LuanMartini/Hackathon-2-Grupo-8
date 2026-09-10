@@ -227,14 +227,38 @@ export const diagnosticTrees = {
     id: "reports",
     name: "Relatórios e exportações",
     keywords: ["relatório", "relatorio", "exportar", "exportação", "planilha", "baixar pdf", "download", "gerar relatório"],
-    maxQuestions: 5,
-    startNode: "report_stage",
+    maxQuestions: 6,
+    startNode: "report_name",
     problems: ["processing", "download", "invalid_data", "permission", "configuration"],
     nodes: {
+      report_name: { id: "report_name", question: "Qual relatório você estava consultando?", hint: "Escolha a opção mais próxima. Isso ajuda o suporte a entender o contexto sem pedir a mesma informação depois.", possibleProblems: ["processing", "download", "invalid_data", "permission", "configuration"], answers: [
+        { id: "sales", label: "Vendas", next: "report_stage", keep: ["processing", "download", "invalid_data", "permission", "configuration"], info: "O relatório consultado é de vendas." },
+        { id: "financial", label: "Financeiro", next: "report_stage", keep: ["processing", "download", "invalid_data", "permission", "configuration"], info: "O relatório consultado é financeiro." },
+        { id: "inventory", label: "Estoque", next: "report_stage", keep: ["processing", "download", "invalid_data", "permission", "configuration"], info: "O relatório consultado é de estoque." },
+        { id: "customers", label: "Clientes", next: "report_stage", keep: ["processing", "download", "invalid_data", "permission", "configuration"], info: "O relatório consultado é de clientes." },
+        { id: "other", label: "Outro relatório", next: "report_stage", keep: ["processing", "download", "invalid_data", "permission", "configuration"], info: "A pessoa usa outro tipo de relatório." },
+      ] },
       report_stage: { id: "report_stage", question: "Qual parte do relatório não funcionou?", hint: "Isso define se o problema está na geração, no conteúdo ou no arquivo baixado.", possibleProblems: ["processing", "download", "invalid_data", "permission", "configuration"], answers: [
-        { id: "generate", label: "O relatório não é gerado", description: "A tela fica carregando ou retorna um erro.", next: "report_scope", keep: ["processing", "permission", "configuration"], info: "A geração do relatório não foi concluída." },
-        { id: "export", label: "O relatório gera, mas não baixa", description: "O arquivo deveria abrir ou ser salvo, mas isso não acontece.", next: "report_download", keep: ["download", "configuration"], info: "O conteúdo foi gerado, mas o arquivo não foi obtido." },
-        { id: "content", label: "O relatório abre com dados errados ou faltando", description: "O arquivo é aberto, porém o conteúdo não corresponde ao esperado.", next: "report_filters", keep: ["invalid_data", "permission", "configuration"], info: "O relatório foi criado, mas o conteúdo precisa de validação." },
+        { id: "generate", label: "O relatório não é gerado", description: "A tela fica carregando ou retorna um erro.", next: "report_timing", keep: ["processing", "permission", "configuration"], info: "A geração do relatório não foi concluída." },
+        { id: "export", label: "O relatório gera, mas não baixa", description: "O arquivo deveria abrir ou ser salvo, mas isso não acontece.", next: "report_format", keep: ["download", "configuration"], info: "O conteúdo foi gerado, mas o arquivo não foi obtido." },
+        { id: "content", label: "O relatório abre com dados errados ou faltando", description: "Inclui relatório vazio, incompleto ou com valores diferentes do esperado.", next: "report_data_state", keep: ["invalid_data", "permission", "configuration"], info: "O relatório foi criado, mas o conteúdo precisa de validação." },
+      ] },
+      report_timing: { id: "report_timing", question: "Esse problema começou hoje ou já acontecia antes?", possibleProblems: ["processing", "permission", "configuration"], answers: [
+        { id: "today", label: "Começou hoje", next: "report_scope", keep: ["processing", "configuration"], info: "A falha na geração começou hoje." },
+        { id: "before", label: "Já acontecia antes", next: "report_scope", keep: ["processing", "permission", "configuration"], info: "A falha na geração já ocorria anteriormente." },
+        { id: "unknown", label: "Não sei informar", next: "report_scope", keep: ["processing", "permission", "configuration"], info: "Não foi possível confirmar quando a falha começou." },
+      ] },
+      report_format: { id: "report_format", question: "Qual formato você escolheu para exportar?", possibleProblems: ["download", "configuration"], answers: [
+        { id: "pdf", label: "PDF", next: "report_download", keep: ["download", "configuration"], info: "A exportação foi solicitada em PDF." },
+        { id: "excel", label: "Excel", next: "report_download", keep: ["download", "configuration"], info: "A exportação foi solicitada em Excel." },
+        { id: "csv", label: "CSV", next: "report_download", keep: ["download", "configuration"], info: "A exportação foi solicitada em CSV." },
+        { id: "other", label: "Outro formato", next: "report_download", keep: ["download", "configuration"], info: "A exportação foi solicitada em outro formato." },
+      ] },
+      report_data_state: { id: "report_data_state", question: "Como os dados aparecem no relatório?", possibleProblems: ["invalid_data", "permission", "configuration"], answers: [
+        { id: "empty", label: "Vazio ou sem registros", next: "report_filters", keep: ["invalid_data", "configuration", "permission"], info: "O relatório não apresenta registros para a consulta." },
+        { id: "incomplete", label: "Incompleto", next: "report_filters", keep: ["invalid_data", "configuration", "permission"], info: "Parte dos registros esperados não aparece no relatório." },
+        { id: "different", label: "Com valores diferentes do esperado", next: "report_filters", keep: ["invalid_data", "configuration"], info: "Os valores exibidos diferem do esperado." },
+        { id: "open", label: "Não abre", next: "report_scope", keep: ["processing", "permission", "configuration"], info: "O relatório não chega a abrir para conferência." },
       ] },
       report_scope: { id: "report_scope", question: "Outro usuário consegue gerar o mesmo relatório?", possibleProblems: ["processing", "permission", "configuration"], answers: yesNoUnknown(
         { result: "report_processing", keep: ["processing", "configuration"], info: "A falha ocorre para mais de uma pessoa." },
@@ -244,7 +268,7 @@ export const diagnosticTrees = {
         { result: "report_download_blocked", keep: ["download"], info: "O navegador bloqueou a abertura ou o download do arquivo." },
         { result: "report_export", keep: ["configuration", "download"], info: "O navegador não indicou bloqueio de download." },
         { result: "report_export", keep: ["configuration", "download"], info: "Não foi possível confirmar se houve bloqueio no navegador." }) },
-      report_filters: { id: "report_filters", question: "Os filtros e o período exibidos estão corretos?", possibleProblems: ["invalid_data", "permission", "configuration"], answers: yesNoUnknown(
+      report_filters: { id: "report_filters", question: "Os filtros e o período exibidos estão corretos?", hint: "Ao conferir, considere também empresa, filial e usuário selecionados.", possibleProblems: ["invalid_data", "permission", "configuration"], answers: yesNoUnknown(
         { result: "report_data", keep: ["invalid_data", "configuration"], info: "Os filtros parecem corretos, mas os dados não correspondem." },
         { result: "report_filter", keep: ["configuration"], info: "Os filtros ou o período usado precisam de correção." },
         { result: "report_permission", keep: ["permission", "configuration"], info: "Não foi possível validar os filtros; o perfil pode limitar o conteúdo." }) },
