@@ -4,6 +4,18 @@ const yesNoUnknown = (yes, no, unknown = no) => [
   { id: "unknown", label: "Não sei", ...unknown },
 ];
 
+const impactNode = (id, question, possibleProblems) => ({
+  id,
+  question,
+  hint: "Essa resposta ajuda a equipe a entender a urgência sem mudar o diagnóstico provável.",
+  possibleProblems,
+  answers: yesNoUnknown(
+    { finish: true, preservePossibilities: true, keep: possibleProblems, info: "O problema impede a conclusão da tarefa." },
+    { finish: true, preservePossibilities: true, keep: possibleProblems, info: "A tarefa ainda pode ser concluída ou existe uma alternativa temporária." },
+    { finish: true, preservePossibilities: true, keep: possibleProblems, info: "O impacto do problema na tarefa não foi confirmado." },
+  ),
+});
+
 export const diagnosticTrees = {
   invoice: {
     id: "invoice",
@@ -11,6 +23,7 @@ export const diagnosticTrees = {
     keywords: ["nota", "nf", "fiscal", "emitir", "emissão"],
     maxQuestions: 6,
     startNode: "invoice_created",
+    completionNode: "invoice_impact",
     problems: ["integration", "configuration", "external_service", "permission", "outage", "invalid_data"],
     nodes: {
       invoice_created: {
@@ -94,6 +107,7 @@ export const diagnosticTrees = {
           { result: "invoice_external", keep: ["external_service"], info: "O status final não foi identificado." },
         ),
       },
+      invoice_impact: impactNode("invoice_impact", "Esse problema impede você de concluir a emissão da nota?", ["integration", "configuration", "external_service", "permission", "outage", "invalid_data"]),
     },
     results: {
       invoice_integration: { title: "Falha na integração com o serviço de emissão", category: "Integração", priority: "Alta", confidence: 87, causes: [["Comunicação com o serviço externo", 87], ["Configuração da integração", 9], ["Dados inválidos", 4]] },
@@ -106,6 +120,7 @@ export const diagnosticTrees = {
   login: {
     id: "login", name: "Acesso à conta", keywords: ["login", "acessar", "acesso", "conta", "senha", "entrar"], maxQuestions: 6,
     startNode: "login_error", problems: ["wrong_password", "blocked_account", "authentication", "connection", "outage"],
+    completionNode: "login_impact",
     nodes: {
       login_error: { id: "login_error", question: "Aparece alguma mensagem ao tentar entrar?", possibleProblems: ["wrong_password", "blocked_account", "authentication", "connection", "outage"], answers: yesNoUnknown(
         { next: "login_message", keep: ["wrong_password", "blocked_account", "authentication", "connection"], info: "Uma mensagem aparece ao tentar entrar." },
@@ -136,6 +151,7 @@ export const diagnosticTrees = {
         { result: "login_auth", keep: ["authentication"], info: "A tela carrega antes da falha de autenticação." },
         { result: "login_outage", keep: ["outage", "connection"], info: "A tela de acesso não carrega." },
         { result: "login_outage", keep: ["outage", "authentication"], info: "O carregamento da tela não foi confirmado." }) },
+      login_impact: impactNode("login_impact", "Esse problema impede você de entrar e continuar sua tarefa?", ["wrong_password", "blocked_account", "authentication", "connection", "outage"]),
     },
     results: {
       login_password: { title: "Credenciais de acesso precisam ser atualizadas", category: "Acesso", priority: "Média", confidence: 84, causes: [["Senha incorreta", 84], ["Conta bloqueada", 10], ["Falha de autenticação", 6]] },
@@ -147,8 +163,12 @@ export const diagnosticTrees = {
   },
   performance: {
     id: "performance", name: "Sistema lento", keywords: ["lento", "lentidão", "devagar", "travando", "demora"], maxQuestions: 6,
-    startNode: "slow_scope", problems: ["general", "network", "single_user", "feature", "partial_outage", "overload"],
+    startNode: "slow_current", completionNode: "slow_impact", problems: ["general", "network", "single_user", "feature", "partial_outage", "overload"],
     nodes: {
+      slow_current: { id: "slow_current", question: "A lentidão continua acontecendo neste momento?", hint: "Se não souber, você pode seguir e responder sobre a última vez em que percebeu o problema.", possibleProblems: ["general", "network", "single_user", "feature", "partial_outage", "overload"], answers: yesNoUnknown(
+        { next: "slow_scope", keep: ["general", "network", "single_user", "feature", "partial_outage", "overload"], info: "A lentidão continua acontecendo." },
+        { next: "slow_scope", keep: ["single_user", "feature", "partial_outage"], info: "A lentidão não está acontecendo neste momento." },
+        { next: "slow_scope", keep: ["general", "network", "single_user", "feature", "partial_outage", "overload"], info: "Não foi possível confirmar se a lentidão continua." }) },
       slow_scope: { id: "slow_scope", question: "A lentidão acontece com outros usuários?", possibleProblems: ["general", "network", "single_user", "feature", "partial_outage", "overload"], answers: yesNoUnknown(
         { next: "slow_area", keep: ["general", "feature", "partial_outage", "overload"], info: "Outros usuários também percebem lentidão." },
         { next: "slow_connection", keep: ["network", "single_user"], info: "A lentidão parece restrita a este usuário." },
@@ -173,6 +193,7 @@ export const diagnosticTrees = {
         { result: "slow_overload", keep: ["overload"], info: "A lentidão piora em horários de pico." },
         { result: "slow_general", keep: ["general"], info: "A lentidão não varia com o horário." },
         { result: "slow_general", keep: ["general", "overload"], info: "A relação com horários de pico não foi confirmada." }) },
+      slow_impact: impactNode("slow_impact", "A lentidão impede você de concluir a tarefa?", ["general", "network", "single_user", "feature", "partial_outage", "overload"]),
     },
     results: {
       slow_network: { title: "Lentidão relacionada à rede local", category: "Rede", priority: "Média", confidence: 83, causes: [["Conexão local", 83], ["Proxy ou VPN", 11], ["Carga do sistema", 6]] },
@@ -190,13 +211,18 @@ export const diagnosticTrees = {
     keywords: ["cadastro", "cadastrar", "registrar", "incluir cliente", "novo cliente", "salvar cliente"],
     maxQuestions: 5,
     startNode: "registration_stage",
+    completionNode: "registration_impact",
     problems: ["invalid_data", "duplicate", "permission", "configuration", "processing"],
     nodes: {
       registration_stage: { id: "registration_stage", question: "Em que momento o cadastro não funciona?", hint: "Escolha o momento mais próximo do que aconteceu.", possibleProblems: ["invalid_data", "duplicate", "permission", "configuration", "processing"], answers: [
-        { id: "save", label: "Ao salvar os dados preenchidos", description: "O formulário abre, mas não conclui o salvamento.", next: "registration_field", keep: ["invalid_data", "duplicate", "processing"], info: "A falha ocorre ao salvar o formulário." },
+        { id: "save", label: "Ao salvar os dados preenchidos", description: "O formulário abre, mas não conclui o salvamento.", next: "registration_repeat", keep: ["invalid_data", "duplicate", "processing"], info: "A falha ocorre ao salvar o formulário." },
         { id: "open", label: "Antes de abrir o formulário", description: "A tela não abre ou mostra acesso negado.", next: "registration_access", keep: ["permission", "configuration"], info: "A pessoa não chega ao formulário de cadastro." },
         { id: "after", label: "Depois de confirmar o cadastro", description: "A confirmação aparece, mas o registro não fica disponível.", next: "registration_visible", keep: ["processing", "configuration"], info: "O cadastro foi confirmado, mas o resultado não está visível." },
       ] },
+      registration_repeat: { id: "registration_repeat", question: "Ao tentar novamente com os mesmos dados, o problema se repete?", hint: "Não repita a tentativa se isso puder criar um cadastro duplicado.", possibleProblems: ["invalid_data", "duplicate", "processing"], answers: yesNoUnknown(
+        { next: "registration_field", keep: ["invalid_data", "duplicate", "processing"], info: "A falha pode ser repetida com os mesmos dados." },
+        { next: "registration_field", keep: ["processing"], info: "A falha não aconteceu novamente." },
+        { next: "registration_field", keep: ["invalid_data", "duplicate", "processing"], info: "A repetição do problema não foi testada para evitar duplicidade." }) },
       registration_field: { id: "registration_field", question: "O sistema indica algum campo inválido ou obrigatório?", possibleProblems: ["invalid_data", "duplicate", "processing"], answers: yesNoUnknown(
         { result: "registration_invalid", keep: ["invalid_data"], info: "O sistema apontou um campo que precisa de correção." },
         { next: "registration_duplicate", keep: ["duplicate", "processing"], info: "Nenhum campo específico foi destacado." },
@@ -213,6 +239,7 @@ export const diagnosticTrees = {
         { result: "registration_sync", keep: ["processing"], info: "O registro existe, mas demorou para aparecer na lista." },
         { result: "registration_processing", keep: ["processing", "configuration"], info: "O registro não aparece mesmo após atualizar a tela." },
         { result: "registration_processing", keep: ["processing", "configuration"], info: "Não foi possível confirmar a presença do registro." }) },
+      registration_impact: impactNode("registration_impact", "Esse problema impede você de concluir o cadastro?", ["invalid_data", "duplicate", "permission", "configuration", "processing"]),
     },
     results: {
       registration_invalid: { title: "Dados do cadastro precisam de correção", category: "Dados inválidos", priority: "Média", confidence: 86, causes: [["Campo obrigatório ou formato inválido", 86], ["Regra de validação", 9], ["Configuração do formulário", 5]] },
@@ -229,6 +256,7 @@ export const diagnosticTrees = {
     keywords: ["relatório", "relatorio", "exportar", "exportação", "planilha", "baixar pdf", "download", "gerar relatório"],
     maxQuestions: 6,
     startNode: "report_name",
+    completionNode: "report_impact",
     problems: ["processing", "download", "invalid_data", "permission", "configuration"],
     nodes: {
       report_name: { id: "report_name", question: "Qual relatório você estava consultando?", hint: "Escolha a opção mais próxima. Isso ajuda o suporte a entender o contexto sem pedir a mesma informação depois.", possibleProblems: ["processing", "download", "invalid_data", "permission", "configuration"], answers: [
@@ -249,17 +277,25 @@ export const diagnosticTrees = {
         { id: "unknown", label: "Não sei informar", next: "report_scope", keep: ["processing", "permission", "configuration"], info: "Não foi possível confirmar quando a falha começou." },
       ] },
       report_format: { id: "report_format", question: "Qual formato você escolheu para exportar?", possibleProblems: ["download", "configuration"], answers: [
-        { id: "pdf", label: "PDF", next: "report_download", keep: ["download", "configuration"], info: "A exportação foi solicitada em PDF." },
-        { id: "excel", label: "Excel", next: "report_download", keep: ["download", "configuration"], info: "A exportação foi solicitada em Excel." },
-        { id: "csv", label: "CSV", next: "report_download", keep: ["download", "configuration"], info: "A exportação foi solicitada em CSV." },
-        { id: "other", label: "Outro formato", next: "report_download", keep: ["download", "configuration"], info: "A exportação foi solicitada em outro formato." },
+        { id: "pdf", label: "PDF", next: "report_format_scope", keep: ["download", "configuration"], info: "A exportação foi solicitada em PDF." },
+        { id: "excel", label: "Excel", next: "report_format_scope", keep: ["download", "configuration"], info: "A exportação foi solicitada em Excel." },
+        { id: "csv", label: "CSV", next: "report_format_scope", keep: ["download", "configuration"], info: "A exportação foi solicitada em CSV." },
+        { id: "other", label: "Outro formato", next: "report_format_scope", keep: ["download", "configuration"], info: "A exportação foi solicitada em outro formato." },
       ] },
+      report_format_scope: { id: "report_format_scope", question: "O problema também acontece ao exportar em outro formato?", hint: "Se for seguro, compare com outro formato para separar uma falha do arquivo de uma falha geral de exportação.", possibleProblems: ["download", "configuration"], answers: yesNoUnknown(
+        { next: "report_download", keep: ["configuration", "download"], info: "A falha ocorre em mais de um formato de exportação." },
+        { next: "report_download", keep: ["configuration"], info: "A falha parece restrita ao formato escolhido." },
+        { next: "report_download", keep: ["download", "configuration"], info: "Não foi possível testar outro formato de exportação." }) },
       report_data_state: { id: "report_data_state", question: "Como os dados aparecem no relatório?", possibleProblems: ["invalid_data", "permission", "configuration"], answers: [
-        { id: "empty", label: "Vazio ou sem registros", next: "report_filters", keep: ["invalid_data", "configuration", "permission"], info: "O relatório não apresenta registros para a consulta." },
-        { id: "incomplete", label: "Incompleto", next: "report_filters", keep: ["invalid_data", "configuration", "permission"], info: "Parte dos registros esperados não aparece no relatório." },
+        { id: "empty", label: "Vazio ou sem registros", next: "report_records", keep: ["invalid_data", "configuration", "permission"], info: "O relatório não apresenta registros para a consulta." },
+        { id: "incomplete", label: "Incompleto", next: "report_records", keep: ["invalid_data", "configuration", "permission"], info: "Parte dos registros esperados não aparece no relatório." },
         { id: "different", label: "Com valores diferentes do esperado", next: "report_filters", keep: ["invalid_data", "configuration"], info: "Os valores exibidos diferem do esperado." },
         { id: "open", label: "Não abre", next: "report_scope", keep: ["processing", "permission", "configuration"], info: "O relatório não chega a abrir para conferência." },
       ] },
+      report_records: { id: "report_records", question: "Existem registros no sistema para o período informado?", hint: "Pense em um lançamento conhecido que deveria aparecer nessa consulta.", possibleProblems: ["invalid_data", "configuration", "permission"], answers: yesNoUnknown(
+        { next: "report_filters", keep: ["invalid_data", "permission", "configuration"], info: "Existem registros que deveriam aparecer no relatório." },
+        { next: "report_filters", keep: ["configuration"], info: "Não há registro confirmado para o período consultado." },
+        { next: "report_filters", keep: ["invalid_data", "permission", "configuration"], info: "Não foi possível confirmar se há registros no período." }) },
       report_scope: { id: "report_scope", question: "Outro usuário consegue gerar o mesmo relatório?", possibleProblems: ["processing", "permission", "configuration"], answers: yesNoUnknown(
         { result: "report_processing", keep: ["processing", "configuration"], info: "A falha ocorre para mais de uma pessoa." },
         { result: "report_permission", keep: ["permission"], info: "A falha parece restrita ao perfil atual." },
@@ -272,6 +308,7 @@ export const diagnosticTrees = {
         { result: "report_data", keep: ["invalid_data", "configuration"], info: "Os filtros parecem corretos, mas os dados não correspondem." },
         { result: "report_filter", keep: ["configuration"], info: "Os filtros ou o período usado precisam de correção." },
         { result: "report_permission", keep: ["permission", "configuration"], info: "Não foi possível validar os filtros; o perfil pode limitar o conteúdo." }) },
+      report_impact: impactNode("report_impact", "Esse problema impede você de concluir a consulta ou exportação?", ["processing", "download", "invalid_data", "permission", "configuration"]),
     },
     results: {
       report_processing: { title: "Geração de relatório precisa de verificação", category: "Processamento", priority: "Alta", confidence: 80, causes: [["Processamento do relatório", 80], ["Fila de geração", 13], ["Configuração da rotina", 7]] },
@@ -288,20 +325,26 @@ export const diagnosticTrees = {
     keywords: ["notificação", "notificações", "email", "e-mail", "alerta", "aviso", "não recebi", "nao recebi"],
     maxQuestions: 5,
     startNode: "notification_channel",
+    completionNode: "notification_impact",
     problems: ["configuration", "delivery", "permission", "outage"],
     nodes: {
       notification_channel: { id: "notification_channel", question: "Qual aviso não chegou?", hint: "Identificar o canal evita testar configurações que não se aplicam ao caso.", possibleProblems: ["configuration", "delivery", "permission", "outage"], answers: [
         { id: "email", label: "E-mail automático", description: "Confirmações, alertas ou mensagens enviadas por e-mail.", next: "notification_email", keep: ["delivery", "configuration", "outage"], info: "O aviso esperado era um e-mail automático." },
-        { id: "system", label: "Notificação dentro do sistema", description: "Aviso exibido no sino ou na central de notificações.", next: "notification_scope", keep: ["configuration", "permission", "outage"], info: "O aviso esperado era uma notificação interna." },
+        { id: "system", label: "Notificação dentro do sistema", description: "Aviso exibido no sino ou na central de notificações.", next: "notification_repeat", keep: ["configuration", "permission", "outage"], info: "O aviso esperado era uma notificação interna." },
       ] },
       notification_email: { id: "notification_email", question: "O e-mail também não aparece na caixa de spam ou lixo eletrônico?", possibleProblems: ["delivery", "configuration", "outage"], answers: yesNoUnknown(
-        { next: "notification_scope", keep: ["delivery", "configuration", "outage"], info: "O e-mail não foi localizado em nenhuma caixa." },
+        { next: "notification_repeat", keep: ["delivery", "configuration", "outage"], info: "O e-mail não foi localizado em nenhuma caixa." },
         { result: "notification_spam", keep: ["configuration"], info: "O e-mail foi entregue, mas classificado como spam." },
-        { next: "notification_scope", keep: ["delivery", "configuration"], info: "Não foi possível verificar as caixas de e-mail." }) },
+        { next: "notification_repeat", keep: ["delivery", "configuration"], info: "Não foi possível verificar as caixas de e-mail." }) },
+      notification_repeat: { id: "notification_repeat", question: "Ao solicitar o aviso novamente, ele continua sem chegar?", hint: "Só repita a ação se ela não puder gerar cobrança, envio duplicado ou outra consequência.", possibleProblems: ["configuration", "delivery", "permission", "outage"], answers: yesNoUnknown(
+        { next: "notification_scope", keep: ["configuration", "delivery", "permission", "outage"], info: "A ausência do aviso pode ser repetida." },
+        { next: "notification_scope", keep: ["configuration", "delivery"], info: "O aviso chegou em uma nova tentativa." },
+        { next: "notification_scope", keep: ["configuration", "delivery", "permission", "outage"], info: "A solicitação do aviso não foi repetida." }) },
       notification_scope: { id: "notification_scope", question: "Outras pessoas deixam de receber o mesmo aviso?", possibleProblems: ["configuration", "delivery", "permission", "outage"], answers: yesNoUnknown(
         { result: "notification_service", keep: ["delivery", "outage", "configuration"], info: "O aviso falha para mais de uma pessoa." },
         { result: "notification_profile", keep: ["permission", "configuration"], info: "A falha parece restrita ao perfil atual." },
         { result: "notification_profile", keep: ["configuration", "delivery", "permission"], info: "Não foi possível confirmar o alcance do problema." }) },
+      notification_impact: impactNode("notification_impact", "A falta desse aviso impede você de continuar a tarefa?", ["configuration", "delivery", "permission", "outage"]),
     },
     results: {
       notification_spam: { title: "E-mail entregue, mas classificado como spam", category: "Configuração", priority: "Baixa", confidence: 94, causes: [["Filtro de spam", 94], ["Remetente não confiável", 4], ["Regra da caixa de entrada", 2]] },
@@ -313,8 +356,9 @@ export const diagnosticTrees = {
     id: "general",
     name: "Problema geral",
     keywords: [],
-    maxQuestions: 5,
+    maxQuestions: 6,
     startNode: "general_area",
+    completionNode: "general_impact",
     problems: ["feature", "permission", "outage", "configuration", "connection"],
     nodes: {
       general_area: { id: "general_area", question: "Em qual parte do sistema o problema aparece?", hint: "Uma descrição ampla é comum. Começamos encontrando a área afetada.", possibleProblems: ["feature", "permission", "outage", "configuration", "connection"], answers: [
@@ -324,17 +368,22 @@ export const diagnosticTrees = {
       ] },
       general_message: { id: "general_message", question: "O sistema mostra uma mensagem de erro ou acesso negado?", possibleProblems: ["feature", "permission", "configuration"], answers: yesNoUnknown(
         { next: "general_error_type", keep: ["permission", "configuration", "feature"], info: "Existe uma mensagem que pode orientar a triagem." },
-        { next: "general_scope", keep: ["feature", "configuration", "connection"], info: "Não há mensagem visível para orientar a triagem." },
-        { next: "general_scope", keep: ["feature", "configuration", "connection"], info: "Não foi possível identificar uma mensagem." }) },
+        { next: "general_recent_change", keep: ["feature", "configuration", "connection"], info: "Não há mensagem visível para orientar a triagem." },
+        { next: "general_recent_change", keep: ["feature", "configuration", "connection"], info: "Não foi possível identificar uma mensagem." }) },
       general_error_type: { id: "general_error_type", question: "O que a mensagem sugere?", possibleProblems: ["feature", "permission", "configuration"], answers: [
         { id: "access", label: "Sem permissão ou acesso negado", result: "general_permission", keep: ["permission"], info: "A mensagem aponta falta de permissão." },
         { id: "data", label: "Campo, regra ou dado inválido", result: "general_configuration", keep: ["configuration"], info: "A mensagem aponta uma regra ou dado que precisa ser revisado." },
-        { id: "other", label: "Outro erro ou código técnico", next: "general_scope", keep: ["feature", "configuration"], info: "Há um erro, mas ele não se encaixa nas opções anteriores." },
+        { id: "other", label: "Outro erro ou código técnico", next: "general_recent_change", keep: ["feature", "configuration"], info: "Há um erro, mas ele não se encaixa nas opções anteriores." },
       ] },
+      general_recent_change: { id: "general_recent_change", question: "O problema começou depois de alguma alteração no sistema, navegador ou dispositivo?", hint: "Considere atualizações, troca de navegador, mudança de configuração ou uma nova forma de executar a tarefa.", possibleProblems: ["feature", "configuration", "connection"], answers: yesNoUnknown(
+        { next: "general_scope", keep: ["configuration", "connection", "feature"], info: "O problema começou após uma alteração recente." },
+        { next: "general_scope", keep: ["feature", "configuration"], info: "Nenhuma alteração recente foi identificada." },
+        { next: "general_scope", keep: ["feature", "configuration", "connection"], info: "Não foi possível relacionar o problema a uma alteração recente." }) },
       general_scope: { id: "general_scope", question: "Outras pessoas também encontram o mesmo problema?", possibleProblems: ["feature", "permission", "outage", "configuration", "connection"], answers: yesNoUnknown(
         { result: "general_outage", keep: ["outage", "configuration"], info: "O problema também atinge outras pessoas." },
         { result: "general_feature", keep: ["feature", "permission", "configuration"], info: "O problema parece restrito a uma pessoa ou contexto." },
         { result: "general_feature", keep: ["feature", "configuration", "connection"], info: "O alcance do problema não foi confirmado." }) },
+      general_impact: impactNode("general_impact", "Esse problema impede você de concluir a tarefa?", ["feature", "permission", "outage", "configuration", "connection"]),
     },
     results: {
       general_permission: { title: "Acesso à funcionalidade precisa ser revisado", category: "Permissão", priority: "Média", confidence: 86, causes: [["Perfil sem acesso", 86], ["Regra de autorização", 10], ["Sessão desatualizada", 4]] },

@@ -106,6 +106,7 @@ export default function Home() {
                 aria-describedby={error ? "problem-error" : "problem-help"}
               />
               {error ? <p id="problem-error" role="alert" className="mt-2 text-sm font-medium text-red-600">{error}</p> : <p id="problem-help" className="mt-2 text-sm text-slate-500">Você não precisa saber explicar tecnicamente.</p>}
+              <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-900">Para sua segurança, não envie senhas, códigos de confirmação, chaves de acesso, documentos ou dados financeiros.</p>
               <div className="mt-4"><p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Exemplos de temas</p><div className="mt-2 flex flex-wrap gap-2">{quickExamples.map((example) => <button key={example} type="button" onClick={() => { setDescription(example); setError(""); }} className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-left text-xs font-medium text-slate-600 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700">{example}</button>)}</div></div>
               <Button onClick={startDiagnosis} size="lg" className="mt-6 h-13 w-full rounded-xl bg-primary text-base font-semibold shadow-[0_10px_28px_rgba(13,72,255,.25)] hover:bg-blue-700">
                 Começar diagnóstico

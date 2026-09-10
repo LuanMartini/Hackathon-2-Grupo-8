@@ -9,6 +9,8 @@ export function ProfileSwitcher({ compact = false }) {
   return (
     <div className="flex items-center gap-2">
       {!compact && <ShieldCheck aria-hidden="true" className="size-4 text-slate-400" />}
+      {!compact && <div className="min-w-0"><p className="text-xs font-semibold text-slate-600">Modo de demonstração</p><p className="text-xs text-slate-500">Esta troca simula personas diferentes.</p></div>}
+      {compact && <span className="hidden text-xs text-slate-500 xl:inline">Modo demo</span>}
       <Select value={profile?.role || "usuario"} onValueChange={setDemoProfile}>
         <SelectTrigger aria-label="Perfil de demonstração" className="h-9 min-w-35 border-slate-200 bg-white text-xs font-semibold text-slate-700"><SelectValue /></SelectTrigger>
         <SelectContent>

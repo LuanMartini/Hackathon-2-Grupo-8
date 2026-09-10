@@ -1,91 +1,101 @@
-# Claro Support
+# Suporte Claro — MVP de diagnóstico guiado
 
-MVP de diagnóstico guiado para chamados de suporte, desenvolvido pelo Grupo 8 no Hackathon 2.
+O Suporte Claro é um MVP criado para transformar relatos incompletos em diagnósticos mais claros, soluções seguras e chamados estruturados. A proposta é reduzir a necessidade de a equipe pedir as mesmas informações várias vezes e ajudar a pessoa usuária antes da abertura de um chamado.
 
-## O que o projeto faz
+## Problema abordado
 
-A pessoa usuária descreve um problema com suas próprias palavras. O sistema identifica o tema, apresenta perguntas relacionadas ao contexto e organiza as respostas em um chamado mais completo para a equipe de suporte.
-
-Temas disponíveis no MVP:
-
-- Emissão de nota fiscal
-- Acesso à conta
-- Lentidão do sistema
-- Cadastro de clientes ou usuários
-- Relatórios e exportações
-- Notificações e e-mails
-- Problemas gerais
+Pessoas usuárias frequentemente relatam problemas de forma curta, sem informar contexto, mensagens de erro, alcance ou tentativas já feitas. Isso aumenta o tempo de triagem e gera conversas repetitivas com o suporte.
 
 ## Principais fluxos
 
-1. A pessoa descreve o que aconteceu.
-2. O diagnóstico seleciona o tema mais adequado.
-3. As perguntas refinam as possíveis causas.
-4. O sistema mostra uma hipótese, prioridade e próximos passos.
-5. Um chamado estruturado pode ser criado e acompanhado.
+1. A pessoa descreve o problema com suas próprias palavras.
+2. O MVP seleciona uma árvore de diagnóstico compatível e faz perguntas objetivas.
+3. O resultado apresenta causas prováveis e soluções locais seguras.
+4. Se necessário, o chamado é criado com relato, respostas, tentativas, evidência e contexto técnico.
+5. O suporte acompanha a fila, altera status, solicita detalhes e registra comentários.
+6. Após a resolução, a pessoa usuária pode avaliar o atendimento.
 
-O MVP também possui uma central para a equipe de suporte, com fila de chamados, detalhes, métricas e insights.
+## Telas e perfis
 
-## Perfis demonstrativos
+- **Início:** criação de um novo diagnóstico.
+- **Diagnóstico:** perguntas adaptadas para nota fiscal, login, cadastro, relatórios, notificações, desempenho e situações gerais.
+- **Resultado:** análise demonstrativa, soluções sugeridas, tentativas e criação do chamado.
+- **Meus chamados:** visão restrita aos chamados da pessoa usuária.
+- **Central de suporte:** visão geral, chamados, problemas comuns e insights.
 
-- `usuario`: cria e acompanha somente os próprios chamados.
-- `suporte`: acessa a central, a lista completa de chamados, métricas e insights.
+O MVP possui dois perfis simulados:
 
-> A proteção atual é demonstrativa e usa dados locais no navegador. Em produção, autenticação e autorização devem ser validadas no servidor.
+- `usuario`: cria e acompanha apenas os próprios chamados.
+- `suporte`: acompanha todos os chamados e altera status.
 
-## Tecnologias
+A troca de perfil existe apenas para demonstrar os dois fluxos; ela não representa autenticação real.
 
-- React
-- Vinext / Vite
-- Tailwind CSS
-- Componentes baseados em shadcn
+## Recursos do MVP
+
+- perguntas adaptativas a partir do relato inicial;
+- seleção local de soluções seguras;
+- histórico de soluções apresentadas e tentativas feitas;
+- anexos de imagem locais;
+- comentários, status e histórico do chamado;
+- avaliação após resolução;
+- detecção local de chamados parecidos;
+- métricas demonstrativas;
+- tema claro, escuro, seguir sistema, alto contraste, preto e branco e tamanho de fonte;
+- avisos de segurança e proteção demonstrativa de rotas.
 
 ## Como executar localmente
 
-### Pré-requisitos
-
-- Node.js 22 ou superior
-
-### Instalação
-
-```bash
-npm install
-```
-
-### Desenvolvimento
+Pré-requisito: Node.js 22 ou superior.
 
 ```bash
 npm run dev
 ```
 
-Abra o endereço informado no terminal, normalmente `http://localhost:5173`.
-
-### Compilação
+Abra `http://localhost:5173` no navegador. Para validar a versão de entrega:
 
 ```bash
 npm run build
 ```
 
-## Estrutura principal
+## Dados demonstrativos
 
-```text
-app/          telas e rotas
-components/   componentes reutilizáveis
-data/         árvores de diagnóstico e dados demonstrativos
-lib/          regras de seleção, adaptação e armazenamento local
-public/       arquivos estáticos
-```
+Os chamados, comentários, avaliações, anexos e preferências do MVP ficam neste navegador. A central também usa exemplos fixos para tornar a demonstração mais completa.
 
-## Limitações do MVP
+No painel de suporte, o botão **Restaurar dados demonstrativos** remove apenas os dados criados localmente durante a demonstração. Os exemplos fixos não são alterados.
 
-- Não possui banco de dados ou backend real.
-- Chamados e perfis são simulados localmente.
-- Não envia e-mails ou notificações reais.
-- Não integra com sistemas fiscais ou outros serviços externos.
+## Tecnologias
 
-## Próximos passos
+- React e Vinext;
+- Tailwind CSS;
+- componentes de interface baseados em Shadcn;
+- Lucide Icons;
+- `localStorage` e `sessionStorage` para dados demonstrativos.
 
-- Implementar autenticação real.
-- Criar API e banco de dados.
-- Validar permissões no servidor.
-- Integrar notificações e serviços externos.
+## Equipe — Grupo 8
+
+- Estela Fiorentin — Design • Pesquisa
+- Júlio César Diezel — Comunicação • Pesquisa
+- Victor Gabriel Cappellesso — Pesquisa
+- Gabriel Decezere Bevilaqua — Pesquisa
+- Kaua Gabriel Lorenssetti — Dev
+- Endrio Ruan de Matos — Dev • Design
+- Vitor Dezem — Pesquisa
+- André Luiz Gabiatti — Pesquisa
+- Luiz Eduardo Rosa Libano — Design • Comunicação
+- Luan Carlos Martini — Dev • Pesquisa
+
+## Limitações conhecidas
+
+Este é um MVP demonstrativo. `localStorage` não substitui autenticação, autorização ou persistência segura. Os dados podem ser alterados por quem controla o navegador e não devem conter informações reais ou sensíveis.
+
+Não envie senhas, códigos de confirmação, chaves de acesso, documentos ou dados financeiros nos relatos ou anexos.
+
+## Próximos passos para produção
+
+- autenticação real;
+- API com validação de permissões no servidor;
+- banco de dados para chamados, comentários e métricas;
+- armazenamento seguro de anexos;
+- logs de auditoria;
+- monitoramento de erros e desempenho;
+- testes com pessoas usuárias e leitores de tela reais.

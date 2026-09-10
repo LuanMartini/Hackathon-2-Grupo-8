@@ -8,41 +8,36 @@ import { StatsCard } from "@/components/StatsCard";
 import { TicketTable } from "@/components/TicketTable";
 import { TicketDetail } from "@/components/TicketDetail";
 import { loadSupportTickets } from "@/lib/support-storage";
+import { getCustomTickets } from "@/lib/storage";
 import { weeklyVolume } from "@/data/mockInsights";
 import { SecurityMvpCard } from "@/components/SecurityMvpCard";
+import { DemoResetButton } from "@/components/DemoResetButton";
 
 const priorityCopy = { Alta: "Investigar hoje", Média: "Acompanhar nesta fila", Baixa: "Pode seguir no fluxo normal" };
-const samplePriorities = [
-  { id: "#1042", title: "Falha na emissão de nota fiscal", category: "Integração", confidence: 87, priority: "Alta" },
-  { id: "#1041", title: "Conta bloqueada após tentativas", category: "Acesso", confidence: 92, priority: "Alta" },
-  { id: "#1038", title: "Nota parada em processamento", category: "Serviço externo", confidence: 82, priority: "Alta" },
-];
-const reportMetrics = [
-  { label: "Relatórios vazios", value: "6", note: "Principalmente em períodos recentes" },
-  { label: "Valores divergentes", value: "4", note: "Comparação com dados de origem" },
-  { label: "Falhas ao exportar", value: "5", note: "PDF, Excel ou CSV" },
-  { label: "Downloads bloqueados", value: "3", note: "Navegador ou extensão" },
-  { label: "Lentidão", value: "7", note: "Consultas com período amplo" },
-  { label: "Filtro mais citado", value: "Mensal", note: "Período e filial recorrentes" },
-];
-
 export default function SupportDashboard() {
   const [tickets, setTickets] = useState([]);
+  const [localTickets, setLocalTickets] = useState([]);
   const [selected, setSelected] = useState(null);
-  useEffect(() => { const refresh = () => setTickets(loadSupportTickets()); refresh(); window.addEventListener("support-tickets-updated", refresh); return () => window.removeEventListener("support-tickets-updated", refresh); }, []);
+  useEffect(() => { const refresh = () => { setTickets(loadSupportTickets()); setLocalTickets(getCustomTickets()); }; refresh(); window.addEventListener("support-tickets-updated", refresh); return () => window.removeEventListener("support-tickets-updated", refresh); }, []);
 
   const openTickets = useMemo(() => tickets.filter((ticket) => ticket.status !== "Resolvido"), [tickets]);
   const priorityTickets = useMemo(() => openTickets.filter((ticket) => ticket.priority === "Alta").slice(0, 3), [openTickets]);
-  const openCount = openTickets.length + 17;
-  const attentionCount = priorityTickets.length || 3;
-  const resolutionRate = Math.round(((tickets.filter((ticket) => ticket.status === "Resolvido").length + 36) / (tickets.length + 44 || 1)) * 100);
-  const visiblePriorities = priorityTickets.length ? priorityTickets : samplePriorities;
+  const openCount = openTickets.length;
+  const attentionCount = priorityTickets.length;
+  const resolutionRate = Math.round((tickets.filter((ticket) => ticket.status === "Resolvido").length / (tickets.length || 1)) * 100);
+  const visiblePriorities = priorityTickets;
   const awaitingCount = tickets.filter((ticket) => ticket.status === "Aguardando informação").length;
   const positiveFeedback = tickets.filter((ticket) => ticket.evaluation?.resolved === true).length;
   const negativeFeedback = tickets.filter((ticket) => ticket.evaluation?.resolved === false).length;
-  const qualityTickets = tickets.filter((ticket) => ticket.quality?.score);
+  const qualityTickets = localTickets.filter((ticket) => ticket.quality?.score);
   const averageQuality = qualityTickets.length ? Math.round(qualityTickets.reduce((sum, ticket) => sum + ticket.quality.score, 0) / qualityTickets.length) : 78;
-  const similarCount = tickets.reduce((sum, ticket) => sum + (ticket.similarTickets?.length || 0), 0);
+  const similarCount = localTickets.reduce((sum, ticket) => sum + (ticket.similarTickets?.length || 0), 0);
+  const activityMetrics = [
+    { label: "Chamados criados aqui", value: localTickets.length, note: "Salvos somente neste navegador" },
+    { label: "Tentativas registradas", value: localTickets.reduce((sum, ticket) => sum + (ticket.solutionAttempts?.length || 0), 0), note: "Soluções tentadas antes do suporte" },
+    { label: "Comentários locais", value: localTickets.reduce((sum, ticket) => sum + (ticket.comments?.length || 0), 0), note: "Atualizam ao enviar uma mensagem" },
+    { label: "Avaliações recebidas", value: localTickets.filter((ticket) => ticket.evaluation).length, note: "Enviadas após a resolução" },
+  ];
 
   return <main className="p-4 sm:p-7 lg:p-9">
     <div className="mx-auto max-w-7xl">
@@ -51,6 +46,7 @@ export default function SupportDashboard() {
         <div className="flex flex-wrap gap-3"><Button asChild variant="outline"><a href="/suporte/chamados">Ver central<ArrowRight className="size-4" /></a></Button><Button onClick={() => location.href = "/"}>Novo diagnóstico<ArrowRight className="size-4" /></Button></div>
       </header>
 
+      <p className="mb-4 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">Dados demonstrativos incluem exemplos fixos e chamados criados neste navegador.</p>
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatsCard icon={TicketCheck} label="Chamados em andamento" value={openCount} note="+3 desde ontem" />
         <StatsCard icon={AlertTriangle} label="Prioridade alta" value={attentionCount} note="Ação recomendada hoje" />
@@ -59,7 +55,7 @@ export default function SupportDashboard() {
       </section>
 
       <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4"><article className="rounded-2xl border border-amber-200 bg-amber-50 p-5"><p className="text-sm font-bold text-amber-900">Aguardando usuário</p><p className="mt-3 text-3xl font-bold text-amber-950">{awaitingCount}</p><p className="mt-1 text-sm text-amber-800">Casos que precisam de uma resposta.</p></article><article className="rounded-2xl border border-slate-200 bg-white p-5"><p className="text-sm font-bold text-slate-700">Qualidade média</p><p className="mt-3 text-3xl font-bold text-slate-950">{averageQuality}%</p><p className="mt-1 text-sm text-slate-500">Relatos estruturados para triagem.</p></article><article className="rounded-2xl border border-slate-200 bg-white p-5"><p className="text-sm font-bold text-slate-700">Avaliações</p><p className="mt-3 text-2xl font-bold text-slate-950">{positiveFeedback} positivas <span className="text-slate-300">/</span> {negativeFeedback} negativas</p><p className="mt-1 text-sm text-slate-500">Respostas após chamados resolvidos.</p></article><article className="rounded-2xl border border-slate-200 bg-white p-5"><p className="text-sm font-bold text-slate-700">Casos parecidos</p><p className="mt-3 text-3xl font-bold text-slate-950">{similarCount}</p><p className="mt-1 text-sm text-slate-500">Sinalizações antes da abertura.</p></article></section>
-      <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"><div className="mb-5"><h2 className="font-bold text-slate-950">Sinais de relatórios</h2><p className="mt-1 text-sm text-slate-500">Métricas demonstrativas para orientar a triagem de relatórios, exportações e downloads.</p></div><div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{reportMetrics.map((metric) => <article key={metric.label} className="rounded-2xl border border-slate-200 bg-slate-50 p-4"><p className="text-sm font-semibold text-slate-700">{metric.label}</p><p className="mt-2 text-2xl font-bold text-slate-950">{metric.value}</p><p className="mt-1 text-xs leading-5 text-slate-500">{metric.note}</p></article>)}</div></section>
+      <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"><div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"><div><h2 className="font-bold text-slate-950">Atividade desta demonstração</h2><p className="mt-1 text-sm text-slate-500">Estes números mudam conforme os chamados criados neste navegador.</p></div><DemoResetButton /></div><div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{activityMetrics.map((metric) => <article key={metric.label} className="rounded-2xl border border-slate-200 bg-slate-50 p-4"><p className="text-sm font-semibold text-slate-700">{metric.label}</p><p className="mt-2 text-2xl font-bold text-slate-950">{metric.value}</p><p className="mt-1 text-xs leading-5 text-slate-500">{metric.note}</p></article>)}</div></section>
 
       <section className="mt-7 grid gap-6 xl:grid-cols-[1.2fr_.8fr]">
         <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">

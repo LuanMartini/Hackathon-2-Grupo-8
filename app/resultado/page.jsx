@@ -16,7 +16,7 @@ import { useRouter } from "next/navigation";
 
 export default function ResultPage() {
   const router = useRouter();
-  const [result, setResult] = useState(null); const [saveError, setSaveError] = useState(""); const [evidence, setEvidence] = useState(null); const [solutionAttempts, setSolutionAttempts] = useState([]);
+  const [result, setResult] = useState(null); const [saveError, setSaveError] = useState(""); const [evidence, setEvidence] = useState(null); const [solutionAttempts, setSolutionAttempts] = useState([]); const [presentedSolutions, setPresentedSolutions] = useState([]);
   useEffect(() => { try { const raw = sessionStorage.getItem("support-diagnosis-result"); if (raw) setResult(JSON.parse(raw)); } catch { setResult(null); } }, []);
   const causes = useMemo(() => result ? generatePossibleCauses(result) : [], [result]);
   const analysis = useMemo(() => result ? generateAIAnalysis({ description: result.description, information: result.information, probableProblem: result.title, category: result.category }) : "", [result]);
@@ -24,6 +24,16 @@ export default function ResultPage() {
   const quality = useMemo(() => calculateTicketQuality(result, evidence), [result, evidence]);
   const similarTickets = useMemo(() => result ? getSimilarTicketsForResult(result) : [], [result]);
   const caseEvaluation = useMemo(() => result ? evaluateCaseAndRecommendSolution(result, solutionAttempts, { evidence }) : null, [result, solutionAttempts, evidence]);
+
+  useEffect(() => {
+    if (!caseEvaluation?.solutions?.length) return;
+    setPresentedSolutions((current) => {
+      const unseen = caseEvaluation.solutions.filter((solution) => !current.some((item) => item.id === solution.id));
+      if (!unseen.length) return current;
+      const presentedAt = new Date().toISOString();
+      return [...current, ...unseen.map((solution, index) => ({ ...summarizeSolution(solution), recommended: current.length === 0 && index === 0, order: current.length + index + 1, presentedAt }))];
+    });
+  }, [caseEvaluation]);
 
   const recordSolutionAttempt = useCallback((attempt) => {
     setSolutionAttempts((current) => [...current.filter((item) => item.solutionId !== attempt.solutionId), attempt]);
@@ -43,8 +53,8 @@ export default function ResultPage() {
     try {
       const ticket = createTicketFromResult(result, analysis, actions, {
         evidence, quality, similarTickets,
-        recommendedSolution: caseEvaluation?.recommendedSolution ? summarizeSolution(caseEvaluation.recommendedSolution) : null,
-        visibleSolutions: caseEvaluation?.solutions.map(summarizeSolution) || [],
+        recommendedSolution: presentedSolutions[0] || (caseEvaluation?.recommendedSolution ? summarizeSolution(caseEvaluation.recommendedSolution) : null),
+        visibleSolutions: presentedSolutions,
         solutionAttempts,
         caseEvaluation: caseEvaluation ? { probableProblem: caseEvaluation.probableProblem, confidence: caseEvaluation.confidence, explanation: caseEvaluation.explanation, requiresSupport: caseEvaluation.requiresSupport, supportReason: caseEvaluation.supportReason, contextForTicket: caseEvaluation.contextForTicket } : null,
       });
@@ -66,7 +76,7 @@ export default function ResultPage() {
         {result.treeId === "reports" && <section className="rounded-2xl border border-blue-200 bg-blue-50 p-5"><h2 className="font-bold text-blue-950">O que ajuda o suporte a investigar</h2><p className="mt-2 text-sm leading-6 text-blue-900">Seu relato já ajuda bastante. Se puder, informe o período, os filtros usados, a empresa ou filial e a mensagem exibida. Uma imagem também pode acelerar a análise.</p></section>}
         <SolutionRecommendations evaluation={caseEvaluation} onAttemptRecorded={recordSolutionAttempt} onOpenTicket={createTicket} />
         <section className="rounded-2xl border border-slate-200 bg-white p-5"><div className="flex items-center gap-2 text-sm font-semibold text-slate-600"><Sparkles className="size-4 text-primary" />Qualidade do relato</div><p className="mt-3 text-xl font-bold text-slate-950">{quality.label} · {quality.score}%</p>{quality.missing.length ? <p className="mt-2 text-sm leading-6 text-slate-500">Para enriquecer o chamado, você pode incluir: {quality.missing.join(", ")}.</p> : <p className="mt-2 text-sm text-emerald-700">O relato já está pronto para a triagem.</p>}</section>
-        <section className="rounded-2xl border border-dashed border-slate-300 bg-white p-5"><div className="flex items-center gap-2 font-semibold text-slate-700"><ImageUp className="size-5 text-primary" />Imagem do erro</div><p className="mt-2 text-sm leading-6 text-slate-500">Opcional. Nome, tipo e prévia ficam somente neste navegador.</p><label className="mt-4 inline-flex cursor-pointer items-center rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"><input type="file" accept="image/*" className="sr-only" onChange={handleEvidence} />Escolher imagem</label>{evidence && <div className="mt-4 flex gap-3"><img src={evidence.preview} alt="Prévia da imagem anexada" className="size-14 rounded-lg border border-slate-200 object-cover" /><p className="text-sm font-medium text-slate-700">{evidence.name}</p></div>}</section>
+        <section className="rounded-2xl border border-dashed border-slate-300 bg-white p-5"><div className="flex items-center gap-2 font-semibold text-slate-700"><ImageUp className="size-5 text-primary" />Imagem do erro</div><p className="mt-2 text-sm leading-6 text-slate-500">Opcional. Nome, tipo e prévia ficam somente neste navegador.</p><p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-900">Não envie senhas, códigos de confirmação, chaves de acesso, documentos ou dados financeiros.</p><label className="mt-4 inline-flex cursor-pointer items-center rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"><input type="file" accept="image/*" className="sr-only" onChange={handleEvidence} />Escolher imagem</label>{evidence && <div className="mt-4 flex gap-3"><img src={evidence.preview} alt="Prévia da imagem anexada" className="size-14 rounded-lg border border-slate-200 object-cover" /><p className="text-sm font-medium text-slate-700">{evidence.name}</p></div>}</section>
         {similarTickets.length > 0 && <section className="rounded-2xl border border-amber-200 bg-amber-50 p-5"><h2 className="font-bold text-amber-950">Encontramos chamados parecidos</h2><p className="mt-1 text-sm leading-6 text-amber-800">Há casos em andamento com tema semelhante. Você ainda pode criar seu chamado.</p><div className="mt-3 space-y-2">{similarTickets.map((ticket) => <div key={ticket.id} className="rounded-xl bg-white/80 p-3"><p className="text-sm font-semibold text-slate-800">{ticket.title}</p><p className="mt-1 text-xs text-slate-500">{ticket.category} · {ticket.status}</p></div>)}</div></section>}
         <section className="rounded-2xl border border-slate-200 bg-white p-5"><div className="flex items-center gap-2 text-sm font-semibold text-slate-600"><Clock3 className="size-4" />Próximos passos já preparados</div><p className="mt-3 text-sm leading-6 text-slate-500">O chamado levará o diagnóstico, as respostas, hipóteses e verificações recomendadas.</p></section>{saveError && <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{saveError}</p>}<Button size="lg" onClick={createTicket} className="h-14 w-full rounded-xl text-base shadow-[0_12px_30px_rgba(13,72,255,.25)]"><FilePlus2 className="size-5" />Criar chamado para o suporte<ArrowRight className="size-5" /></Button><p className="flex items-center justify-center gap-2 text-xs text-slate-400"><ShieldCheck className="size-4" />Salvo neste dispositivo</p></aside></div></div></main>;
 }
